@@ -5,4 +5,4 @@ openpyxl
 fpdf
 scikit-learn
 numpy
-kaleido
+kaleido==0.2.1
