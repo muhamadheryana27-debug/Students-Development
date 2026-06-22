@@ -5,3 +5,4 @@ openpyxl
 fpdf
 scikit-learn
 numpy
+kaleido
