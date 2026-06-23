@@ -220,47 +220,54 @@ def generate_template_bk(nama_siswa_list, kelas_name):
     return buf.getvalue()
 
 def generate_student_pdf(siswa_data, mapel_list, rank, total_siswa, rek_urut, mapel_urut, kelas_name, absensi_synced):
+    # FUNGSI PERBAIKAN: Penyelamat Teks PDF dari Error Encoding
+    def safe_text(txt):
+        if txt is None:
+            return ""
+        clean = re.sub(r'[^\x00-\x7F]+', '', str(txt)).strip()
+        return clean.encode('latin-1', 'replace').decode('latin-1')
+
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 8, "LAPORAN ANALISIS PROFILING SISWA", ln=True, align="C")
+    pdf.cell(0, 8, safe_text("LAPORAN ANALISIS PROFILING SISWA"), ln=True, align="C")
     pdf.set_font("Helvetica", "I", 10)
-    pdf.cell(0, 5, f"Sistem Analisis Pro-Edu Analytics - {kelas_name}", ln=True, align="C")
+    pdf.cell(0, 5, safe_text(f"Sistem Analisis Pro-Edu Analytics - {kelas_name}"), ln=True, align="C")
     pdf.line(10, 25, 200, 25)
     pdf.ln(5)
     
-    nama_clean = clean_pdf_text(siswa_data.get('Nama', ''))
-    nis_clean = f"{clean_pdf_text(siswa_data.get('NISN', ''))} / {clean_pdf_text(siswa_data.get('NIS', ''))}"
-    badge_clean = clean_pdf_text(siswa_data.get('Badge', ''))
+    nama_clean = safe_text(siswa_data.get('Nama', ''))
+    nis_clean = safe_text(f"{siswa_data.get('NISN', '')} / {siswa_data.get('NIS', '')}")
+    badge_clean = safe_text(siswa_data.get('Badge', ''))
     rata_rata = siswa_data.get('Rata-rata', 0)
     tot_skor = f"{siswa_data.get('Total Nilai', 0):.0f}"
     tren = siswa_data.get('Tren_Belajar', 0)
     
     pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 6, "A. PROFIL AKADEMIK & METRIK UTAMA", ln=True)
+    pdf.cell(0, 6, safe_text("A. PROFIL AKADEMIK & METRIK UTAMA"), ln=True)
     pdf.set_font("Helvetica", "", 10)
     
     y_start_info = pdf.get_y()
-    pdf.cell(30, 5, "Nama Siswa", 0, 0)
-    pdf.cell(80, 5, f": {nama_clean}", 0, True)
-    pdf.cell(30, 5, "NISN / NIS", 0, 0)
-    pdf.cell(80, 5, f": {nis_clean}", 0, True)
-    pdf.cell(30, 5, "Peringkat", 0, 0)
-    pdf.cell(80, 5, f": {rank} dari {total_siswa} Siswa", 0, True)
-    pdf.cell(30, 5, "Status", 0, 0)
-    pdf.cell(80, 5, f": {badge_clean}", 0, True)
+    pdf.cell(30, 5, safe_text("Nama Siswa"), 0, 0)
+    pdf.cell(80, 5, safe_text(f": {nama_clean}"), 0, True)
+    pdf.cell(30, 5, safe_text("NISN / NIS"), 0, 0)
+    pdf.cell(80, 5, safe_text(f": {nis_clean}"), 0, True)
+    pdf.cell(30, 5, safe_text("Peringkat"), 0, 0)
+    pdf.cell(80, 5, safe_text(f": {rank} dari {total_siswa} Siswa"), 0, True)
+    pdf.cell(30, 5, safe_text("Status"), 0, 0)
+    pdf.cell(80, 5, safe_text(f": {badge_clean}"), 0, True)
     
     pdf.set_xy(130, y_start_info)
     pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(60, 5, f"Rata-rata: {rata_rata}", border=1, ln=True, align="C")
+    pdf.cell(60, 5, safe_text(f"Rata-rata: {rata_rata}"), border=1, ln=True, align="C")
     pdf.set_xy(130, pdf.get_y() + 1)
-    pdf.cell(60, 5, f"Total Skor: {tot_skor}", border=1, ln=True, align="C")
+    pdf.cell(60, 5, safe_text(f"Total Skor: {tot_skor}"), border=1, ln=True, align="C")
     pdf.set_xy(130, pdf.get_y() + 1)
-    pdf.cell(60, 5, f"Tren Belajar: {tren} Poin", border=1, ln=True, align="C")
+    pdf.cell(60, 5, safe_text(f"Tren Belajar: {tren} Poin"), border=1, ln=True, align="C")
     pdf.ln(10)
     
     pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 6, "B. PETA KOMPETENSI & JALUR BELAJAR", ln=True)
+    pdf.cell(0, 6, safe_text("B. PETA KOMPETENSI & JALUR BELAJAR"), ln=True)
     y_radar = pdf.get_y()
     
     categories = mapel_list
@@ -280,28 +287,28 @@ def generate_student_pdf(siswa_data, mapel_list, rank, total_siswa, rek_urut, ma
         
     pdf.set_xy(110, y_radar + 5)
     pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(0, 5, "Rekomendasi Penjurusan Lanjutan:", ln=True)
+    pdf.cell(0, 5, safe_text("Rekomendasi Penjurusan Lanjutan:"), ln=True)
     pdf.set_font("Helvetica", "", 10)
     if rek_urut and len(rek_urut) >= 2:
-        pdf.set_x(110); pdf.cell(0, 5, f"1. {clean_pdf_text(rek_urut[0][0])}", ln=True)
-        pdf.set_x(110); pdf.cell(0, 5, f"2. {clean_pdf_text(rek_urut[1][0])}", ln=True)
+        pdf.set_x(110); pdf.cell(0, 5, safe_text(f"1. {rek_urut[0][0]}"), ln=True)
+        pdf.set_x(110); pdf.cell(0, 5, safe_text(f"2. {rek_urut[1][0]}"), ln=True)
     
     pdf.set_font("Helvetica", "I", 8)
-    pdf.set_x(110); pdf.cell(0, 5, "*(Dihitung berbasis Teori Kecerdasan Hibrida)*", ln=True)
+    pdf.set_x(110); pdf.cell(0, 5, safe_text("*(Dihitung berbasis Teori Kecerdasan Hibrida)*"), ln=True)
     pdf.ln(2)
     
-    pdf.set_x(110); pdf.set_font("Helvetica", "B", 10); pdf.cell(0, 5, "Kekuatan Utama Belajar:", ln=True)
+    pdf.set_x(110); pdf.set_font("Helvetica", "B", 10); pdf.cell(0, 5, safe_text("Kekuatan Utama Belajar:"), ln=True)
     pdf.set_font("Helvetica", "", 10)
-    for m in mapel_urut[:3]: pdf.set_x(110); pdf.cell(0, 5, f"- {clean_pdf_text(m[0])} ({m[1]})", ln=True)
+    for m in mapel_urut[:3]: pdf.set_x(110); pdf.cell(0, 5, safe_text(f"- {m[0]} ({m[1]})"), ln=True)
     pdf.ln(3)
     
-    pdf.set_x(110); pdf.set_font("Helvetica", "B", 10); pdf.cell(0, 5, "Area Fokus Perbaikan:", ln=True)
+    pdf.set_x(110); pdf.set_font("Helvetica", "B", 10); pdf.cell(0, 5, safe_text("Area Fokus Perbaikan:"), ln=True)
     pdf.set_font("Helvetica", "", 10)
-    for m in mapel_urut[-3:]: pdf.set_x(110); pdf.cell(0, 5, f"- {clean_pdf_text(m[0])} ({m[1]})", ln=True)
+    for m in mapel_urut[-3:]: pdf.set_x(110); pdf.cell(0, 5, safe_text(f"- {m[0]} ({m[1]})"), ln=True)
 
     pdf.set_xy(10, y_radar + 95)
     pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 6, "C. PREVIEW KEDISIPLINAN & EKSTRAKURIKULER", ln=True)
+    pdf.cell(0, 6, safe_text("C. PREVIEW KEDISIPLINAN & EKSTRAKURIKULER"), ln=True)
     y_pie = pdf.get_y()
     
     if absensi_synced and 'Sakit' in siswa_data:
@@ -321,26 +328,26 @@ def generate_student_pdf(siswa_data, mapel_list, rank, total_siswa, rek_urut, ma
             if os.path.exists(tmp_pie_name): os.remove(tmp_pie_name)
             
         pdf.set_xy(110, y_pie + 10)
-        pdf.set_font("Helvetica", "B", 10); pdf.cell(0, 5, "Partisipasi Ekstrakurikuler:", ln=True)
+        pdf.set_font("Helvetica", "B", 10); pdf.cell(0, 5, safe_text("Partisipasi Ekstrakurikuler:"), ln=True)
         pdf.set_font("Helvetica", "", 10)
-        pdf.set_x(110); pdf.cell(0, 5, f"- Pramuka  : {siswa_data.get('Ekskul_Pramuka', '-')}", ln=True)
-        pdf.set_x(110); pdf.cell(0, 5, f"- Kesenian : {siswa_data.get('Ekskul_Kesenian', '-')}", ln=True)
-        pdf.set_x(110); pdf.cell(0, 5, f"- Olahraga : {siswa_data.get('Ekskul_Olahraga', '-')}", ln=True)
+        pdf.set_x(110); pdf.cell(0, 5, safe_text(f"- Pramuka  : {siswa_data.get('Ekskul_Pramuka', '-')}"), ln=True)
+        pdf.set_x(110); pdf.cell(0, 5, safe_text(f"- Kesenian : {siswa_data.get('Ekskul_Kesenian', '-')}"), ln=True)
+        pdf.set_x(110); pdf.cell(0, 5, safe_text(f"- Olahraga : {siswa_data.get('Ekskul_Olahraga', '-')}"), ln=True)
     else:
-        pdf.set_font("Helvetica", "I", 10); pdf.set_x(15); pdf.cell(0, 10, "(Data absensi, ekskul, dan catatan BK belum disinkronkan)", ln=True)
+        pdf.set_font("Helvetica", "I", 10); pdf.set_x(15); pdf.cell(0, 10, safe_text("(Data absensi, ekskul, dan catatan BK belum disinkronkan)"), ln=True)
 
     pdf.add_page(); pdf.set_left_margin(10); pdf.set_right_margin(10); pdf.set_x(10)
     
-    pdf.set_font("Helvetica", "B", 12); pdf.cell(0, 8, "D. RINCIAN NILAI MATA PELAJARAN", ln=True)
+    pdf.set_font("Helvetica", "B", 12); pdf.cell(0, 8, safe_text("D. RINCIAN NILAI MATA PELAJARAN"), ln=True)
     pdf.set_font("Helvetica", "B", 10)
-    pdf.cell(100, 7, " Mata Pelajaran", 1, 0, 'L'); pdf.cell(45, 7, "Nilai Rata-rata", 1, 1, 'C')
+    pdf.cell(100, 7, safe_text(" Mata Pelajaran"), 1, 0, 'L'); pdf.cell(45, 7, safe_text("Nilai Rata-rata"), 1, 1, 'C')
     
     pdf.set_font("Helvetica", "", 10)
     for m in mapel_list:
-        pdf.cell(100, 6, f" {clean_pdf_text(m)}", 1, 0, 'L'); pdf.cell(45, 6, str(siswa_data.get(m, 0)), 1, 1, 'C')
+        pdf.cell(100, 6, safe_text(f" {m}"), 1, 0, 'L'); pdf.cell(45, 6, safe_text(str(siswa_data.get(m, 0))), 1, 1, 'C')
     pdf.ln(6)
     
-    pdf.set_font("Helvetica", "B", 12); pdf.cell(0, 8, "E. ANALISIS PERILAKU, KEHADIRAN & EKSTRAKURIKULER", ln=True)
+    pdf.set_font("Helvetica", "B", 12); pdf.cell(0, 8, safe_text("E. ANALISIS PERILAKU, KEHADIRAN & EKSTRAKURIKULER"), ln=True)
     pdf.set_font("Helvetica", "", 10)
     
     if absensi_synced and 'Sakit' in siswa_data:
@@ -368,27 +375,27 @@ def generate_student_pdf(siswa_data, mapel_list, rank, total_siswa, rek_urut, ma
         if not ctt_bk or ctt_bk == 'nan' or ctt_bk == '-': deskripsi_bk = "Catatan BK: Tidak terdapat catatan pelanggaran disiplin."
         else: deskripsi_bk = f"Catatan Bimbingan Konseling (BK): {ctt_bk}"
             
-        pdf.multi_cell(190, 5, clean_pdf_text(deskripsi_absen), align="J"); pdf.ln(2)
-        pdf.multi_cell(190, 5, clean_pdf_text(deskripsi_ekskul), align="J"); pdf.ln(2)
-        pdf.set_font("Helvetica", "I", 10); pdf.multi_cell(190, 5, clean_pdf_text(deskripsi_bk), align="J"); pdf.set_font("Helvetica", "", 10)
+        pdf.multi_cell(190, 5, safe_text(deskripsi_absen), align="J"); pdf.ln(2)
+        pdf.multi_cell(190, 5, safe_text(deskripsi_ekskul), align="J"); pdf.ln(2)
+        pdf.set_font("Helvetica", "I", 10); pdf.multi_cell(190, 5, safe_text(deskripsi_bk), align="J"); pdf.set_font("Helvetica", "", 10)
     else:
-        pdf.set_font("Helvetica", "I", 10); pdf.cell(0, 5, "Analisis kehadiran, ekskul, dan BK tidak dapat disajikan karena data belum disinkronkan.", ln=True)
+        pdf.set_font("Helvetica", "I", 10); pdf.cell(0, 5, safe_text("Analisis kehadiran, ekskul, dan BK tidak dapat disajikan karena data belum disinkronkan."), ln=True)
     pdf.ln(4)
     
-    pdf.set_font("Helvetica", "B", 12); pdf.cell(0, 8, "F. INTERPRETASI WALI KELAS & SARAN AKADEMIK", ln=True)
+    pdf.set_font("Helvetica", "B", 12); pdf.cell(0, 8, safe_text("F. INTERPRETASI WALI KELAS & SARAN AKADEMIK"), ln=True)
     if len(mapel_urut) >= 2:
-        top1, top2 = clean_pdf_text(mapel_urut[0][0]), clean_pdf_text(mapel_urut[1][0])
-        bot1, bot2 = clean_pdf_text(mapel_urut[-1][0]), clean_pdf_text(mapel_urut[-2][0])
+        top1, top2 = mapel_urut[0][0], mapel_urut[1][0]
+        bot1, bot2 = mapel_urut[-1][0], mapel_urut[-2][0]
     else: top1, top2, bot1, bot2 = "-", "-", "-", "-"
     
     teks_grafik = f"Berdasarkan profil kompetensi akademik, {nama_clean} dominan pada mata pelajaran {top1} dan {top2}. Sebaliknya, perlu adanya perhatian khusus pada pelajaran {bot1} dan {bot2} yang menjadi tantangannya."
-    pdf.set_x(10); pdf.multi_cell(190, 5, teks_grafik, align="J"); pdf.ln(3)
+    pdf.set_x(10); pdf.multi_cell(190, 5, safe_text(teks_grafik), align="J"); pdf.ln(3)
     
     if pd.to_numeric(rata_rata, errors='coerce') >= 85: saran = f"Saran Wali Kelas: Pertahankan prestasimu! Gunakan metode belajar kelompok untuk menaklukkan pelajaran {bot1}."
     elif pd.to_numeric(rata_rata, errors='coerce') >= 75: saran = f"Saran Wali Kelas: Progres belajarmu sudah stabil. Sisihkan waktu ekstra setiap hari untuk mengulang materi {bot1}."
     else: saran = f"Saran Wali Kelas: Saatnya bangkit! Sangat disarankan mengikuti bimbingan tambahan (remedial) untuk pelajaran {bot1}."
                  
-    pdf.set_x(10); pdf.set_font("Helvetica", "BI", 10); pdf.multi_cell(190, 5, saran, align="J")
+    pdf.set_x(10); pdf.set_font("Helvetica", "BI", 10); pdf.multi_cell(190, 5, safe_text(saran), align="J")
     return bytes(pdf.output())
 
 # --- FUNGSI LOAD DATA UTAMA & DETEKSI KELAS ---
@@ -837,7 +844,7 @@ with t2:
         else:
             narrative += f"- ⚠️ Peringatan Bersama: Keduanya mengalami degradasi tren akumulasi nilai. Direkomendasikan evaluasi pola istirahat atau beban tugas di rumah.\n\n"
             
-        narrative += f"### 🛤️ Sinergi Penjurusan Karir Masa Depan:\n"
+        narrative += f"### 🛤️ Sinergi Penjurusan Karir Masa Future:\n"
         if vec1 == vec2:
             narrative += f"- **Pola Sinkronisasi Karir:** Sistem mendeteksi kedua siswa memiliki klaster minat masa depan yang identik (Cenderung pada bidang **{vec1}**). Keduanya sangat direkomendasikan menjadi partner belajar (*study buddy*).\n"
         else:
