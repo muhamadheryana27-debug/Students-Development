@@ -1,8 +1,8 @@
 streamlit
 pandas
-plotly
-openpyxl
-fpdf
-scikit-learn
 numpy
+plotly
 kaleido==0.2.1
+fpdf
+openpyxl
+scikit-learn
