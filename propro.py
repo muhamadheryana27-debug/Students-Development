@@ -396,7 +396,16 @@ def generate_student_pdf(siswa_data, mapel_list, rank, total_siswa, rek_urut, ma
     else: saran = f"Saran Wali Kelas: Saatnya bangkit! Sangat disarankan mengikuti bimbingan tambahan (remedial) untuk pelajaran {bot1}."
                  
     pdf.set_x(10); pdf.set_font("Helvetica", "BI", 10); pdf.multi_cell(190, 5, safe_text(saran), align="J")
-    return bytes(pdf.output())
+    
+    # --- PERBAIKAN FINAL PENCEGAH ERROR "string argument without an encoding" ---
+    pdf_out = pdf.output(dest='S') # Ambil hasil mentah dari FPDF
+    
+    # Deteksi cerdas: Jika FPDF versi lama, ia berupa string (butuh encoding).
+    # Jika FPDF versi baru (fpdf2), ia sudah berupa bytearray.
+    if isinstance(pdf_out, str):
+        return bytes(pdf_out, encoding='latin-1')
+    else:
+        return bytes(pdf_out)
 
 # --- FUNGSI LOAD DATA UTAMA & DETEKSI KELAS ---
 @st.cache_data
