@@ -3,6 +3,6 @@ pandas
 numpy
 plotly
 kaleido==0.2.1
-fpdf
+fpdf2
 openpyxl
 scikit-learn
